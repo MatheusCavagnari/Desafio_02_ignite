@@ -12,7 +12,7 @@ const users = [];
 function checksExistsUserAccount(request, response, next) {
   const { username } = request.headers;
 
-  const user = users.find(user.username === username);
+  const user = users.find((user) => user.username === username);
 
   if (!user) {
     return response.status(404);
@@ -39,11 +39,41 @@ function checksCreateTodosUserAvailability(request, response, next) {
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  if (!validate(id)) return response.status(400).json({ error: "invalid id" });
+
+  const userExists = users.find((user) => user.username === username);
+  if (!userExists) {
+    return response.status(404).json({ error: "user not found" });
+  }
+
+  const foundTodo = userExists.todos.find((todo) => todo.id === id);
+  if (!foundTodo) {
+    return response.status(404).json({ error: "todo not found" });
+  }
+
+  request.user = userExists;
+  request.todo = foundTodo;
+
+  next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+
+  const { id } = request.params;
+
+  const user = users.find((user) => user.id === id);
+
+  if (!user) {
+    return response.status(404);
+  }
+
+  request.user = user;
+
+  return next();
+
 }
 
 app.post('/users', (request, response) => {
